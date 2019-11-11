@@ -5,39 +5,6 @@ const $todos = document.querySelector('.todos');
 const $inputTodo = document.querySelector('.input-todo');
 const $nav = document.querySelector('.nav');
 
-
-const ajax = (() => {
-  const request = (method, url, payload) => new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open(method, url);
-    xhr.setRequestHeader('Content-type', 'application/json');
-    xhr.send(JSON.stringify(payload));
-
-    xhr.onload = () => {
-      if (xhr.status === 200 || xhr.status === 201) {
-        resolve(JSON.parse(xhr.response));
-      } else {
-        reject(new Error(xhr.status));
-      }
-    };
-  });
-
-  return {
-    get(url) {
-      return request('GET', url);
-    },
-    post(url, payload) {
-      return request('POST', url, payload);
-    },
-    delete(url) {
-      return request('DELETE', url);
-    },
-    patch(url, payload) {
-      return request('PATCH', url, payload);
-    }
-  };
-})();
-
 // 렌더
 const render = () => {
   let html = '';
@@ -60,35 +27,47 @@ const render = () => {
 const findMaxId = () => Math.max(0, ...todos.map((todo) => todo.id)) + 1;
 
 // 이벤트 함수
-const getTodos = () => {
-  ajax.get('/todos')
-    .then((res) => todos = res)
-    .then(render)
-    .catch((err) => console.log(err));
+const getTodos = async () => {
+  try {
+    const res = await axios.get('/todos');
+    todos = res.data;
+    render();
+  } catch (error) {
+    console.error(error);
+  }
 };
 
-const addTodos = () => {
-  const todo = { id: findMaxId(), content: $inputTodo.value, completed: false };
-  ajax.post('/todos', todo)
-    .then((res) => todos = res)
-    .then(render)
-    .catch((err) => console.log(err));
+const addTodos = async () => {
+  try {
+    const todo = { id: findMaxId(), content: $inputTodo.value, completed: false };
+    const res = await axios.post('/todos', todo);
+    todos = res.data;
+    render();
+  } catch (error) {
+    console.error(error);
+  }
   $inputTodo.value = '';
 };
 
-const removeTodo = (id) => {
-  ajax.delete(`/todos/${id}`)
-    .then((res) => todos = res)
-    .then(render)
-    .catch((err) => console.log(err));
+const removeTodo = async (id) => {
+  try {
+    const res = await axios.delete(`/todos/${id}`);
+    todos = res.data;
+    render();
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-const toggleTodo = (id) => {
-  const completed = !todos.find((todo) => todo.id === +id).completed;
-  ajax.patch(`/todos/${id}`, { completed })
-    .then((res) => todos = res)
-    .then(render)
-    .catch((err) => console.log(err));
+const toggleTodo = async (id) => {
+  try {
+    const completed = !todos.find((todo) => todo.id === +id).completed;
+    const res = await axios.patch(`/todos/${id}`, { completed });
+    todos = res.data;
+    render();
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const changeNav = (li) => {

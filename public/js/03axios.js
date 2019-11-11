@@ -5,39 +5,6 @@ const $todos = document.querySelector('.todos');
 const $inputTodo = document.querySelector('.input-todo');
 const $nav = document.querySelector('.nav');
 
-
-const ajax = (() => {
-  const request = (method, url, payload) => new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open(method, url);
-    xhr.setRequestHeader('Content-type', 'application/json');
-    xhr.send(JSON.stringify(payload));
-
-    xhr.onload = () => {
-      if (xhr.status === 200 || xhr.status === 201) {
-        resolve(JSON.parse(xhr.response));
-      } else {
-        reject(new Error(xhr.status));
-      }
-    };
-  });
-
-  return {
-    get(url) {
-      return request('GET', url);
-    },
-    post(url, payload) {
-      return request('POST', url, payload);
-    },
-    delete(url) {
-      return request('DELETE', url);
-    },
-    patch(url, payload) {
-      return request('PATCH', url, payload);
-    }
-  };
-})();
-
 // 렌더
 const render = () => {
   let html = '';
@@ -61,32 +28,32 @@ const findMaxId = () => Math.max(0, ...todos.map((todo) => todo.id)) + 1;
 
 // 이벤트 함수
 const getTodos = () => {
-  ajax.get('/todos')
-    .then((res) => todos = res)
+  axios.get('/todos')
+    .then((res) => todos = res.data)
     .then(render)
     .catch((err) => console.log(err));
 };
 
 const addTodos = () => {
   const todo = { id: findMaxId(), content: $inputTodo.value, completed: false };
-  ajax.post('/todos', todo)
-    .then((res) => todos = res)
+  axios.post('/todos', todo)
+    .then((res) => todos = res.data)
     .then(render)
     .catch((err) => console.log(err));
   $inputTodo.value = '';
 };
 
 const removeTodo = (id) => {
-  ajax.delete(`/todos/${id}`)
-    .then((res) => todos = res)
+  axios.delete(`/todos/${id}`)
+    .then((res) => todos = res.data)
     .then(render)
     .catch((err) => console.log(err));
 };
 
 const toggleTodo = (id) => {
   const completed = !todos.find((todo) => todo.id === +id).completed;
-  ajax.patch(`/todos/${id}`, { completed })
-    .then((res) => todos = res)
+  axios.patch(`/todos/${id}`, { completed })
+    .then((res) => todos = res.data)
     .then(render)
     .catch((err) => console.log(err));
 };

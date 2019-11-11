@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true })); // for parsing
 // });
 
 app.get('/todos', (req, res) => {
+  todos.sort((t1, t2) => t2.id - t1.id);
   res.send(todos);
 });
 
