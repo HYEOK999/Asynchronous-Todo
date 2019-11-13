@@ -4,7 +4,10 @@ let navId = 'all';
 const $todos = document.querySelector('.todos');
 const $inputTodo = document.querySelector('.input-todo');
 const $nav = document.querySelector('.nav');
-
+const $clearCompleted = document.querySelector('.clear-completed > .btn');
+const $completeAll = document.querySelector('.complete-all');
+const $completedTodos = document.querySelector('.completed-todos');
+const $activeTodos = document.querySelector('.active-todos');
 
 const ajax = (() => {
   const request = (method, url, payload) => new Promise((resolve, reject) => {
@@ -16,9 +19,10 @@ const ajax = (() => {
     xhr.onload = () => {
       if (xhr.status === 200 || xhr.status === 201) {
         resolve(JSON.parse(xhr.response));
-      } else {
-        reject(new Error(xhr.status));
       }
+    };
+    xhr.onerror = () => {
+      reject(xhr.status);
     };
   });
 
@@ -34,6 +38,9 @@ const ajax = (() => {
     },
     patch(url, payload) {
       return request('PATCH', url, payload);
+    },
+    put(url, payload) {
+      return request('PUT', url, payload);
     }
   };
 })();
@@ -41,9 +48,8 @@ const ajax = (() => {
 // 렌더
 const render = () => {
   let html = '';
-  let _todos = todos;
+  const _todos = todos.filter((todo) => (navId === 'all' ? true : navId === 'active' ? !todo.completed : todo.completed));
 
-  _todos = _todos.filter((todo) => (navId === 'all' ? true : navId === 'active' ? !todo.completed : todo.completed));
   _todos.forEach(({ id, content, completed }) => {
     html += `
     <li id="${id}" class="todo-item">
@@ -53,6 +59,8 @@ const render = () => {
     </li>`;
   });
 
+  $completedTodos.textContent = todos.filter((todo) => todo.completed).length;
+  $activeTodos.textContent = todos.filter((todo) => !todo.completed).length;
   $todos.innerHTML = html;
 };
 
@@ -61,7 +69,7 @@ const findMaxId = () => Math.max(0, ...todos.map((todo) => todo.id)) + 1;
 
 // 이벤트 함수
 const getTodos = () => {
-  ajax.get('/todos')
+  ajax.get('./todos')
     .then((res) => todos = res)
     .then(render)
     .catch((err) => console.log(err));
@@ -69,7 +77,7 @@ const getTodos = () => {
 
 const addTodos = () => {
   const todo = { id: findMaxId(), content: $inputTodo.value, completed: false };
-  ajax.post('/todos', todo)
+  ajax.post('./todos', todo)
     .then((res) => todos = res)
     .then(render)
     .catch((err) => console.log(err));
@@ -77,7 +85,7 @@ const addTodos = () => {
 };
 
 const removeTodo = (id) => {
-  ajax.delete(`/todos/${id}`)
+  ajax.delete(`./todos/${id}`)
     .then((res) => todos = res)
     .then(render)
     .catch((err) => console.log(err));
@@ -91,6 +99,20 @@ const toggleTodo = (id) => {
     .catch((err) => console.log(err));
 };
 
+const toggleAll = (completed) => {
+  ajax.patch('./todos', { completed })
+    .then((_todos) => todos = _todos)
+    .then(render)
+    .catch((err) => console.error(err));
+};
+
+const clearTodos = () => {
+  ajax.delete('./completedTodos')
+    .then((_todos) => todos = _todos)
+    .then(render)
+    .catch((err) => console.error(err));
+};
+
 const changeNav = (li) => {
   [...$nav.children].forEach(($list) => {
     $list.classList.toggle('active', $list === li);
@@ -102,6 +124,7 @@ const changeNav = (li) => {
 // 이벤트
 window.onload = () => {
   getTodos();
+  console.log('promise');
 };
 
 $inputTodo.onkeyup = ({ target, keyCode }) => {
@@ -116,6 +139,15 @@ $todos.onclick = ({ target }) => {
 
 $todos.onchange = ({ target }) => {
   toggleTodo(target.parentNode.id);
+};
+
+
+$completeAll.onchange = ({ target }) => {
+  toggleAll(target.checked);
+};
+
+$clearCompleted.onclick = () => {
+  clearTodos();
 };
 
 $nav.onclick = ({ target }) => {
