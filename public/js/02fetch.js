@@ -4,13 +4,16 @@ let navId = 'all';
 const $todos = document.querySelector('.todos');
 const $inputTodo = document.querySelector('.input-todo');
 const $nav = document.querySelector('.nav');
+const $clearCompleted = document.querySelector('.clear-completed > .btn');
+const $completeAll = document.querySelector('.complete-all');
+const $completedTodos = document.querySelector('.completed-todos');
+const $activeTodos = document.querySelector('.active-todos');
 
 // 렌더
 const render = () => {
   let html = '';
-  let _todos = todos;
 
-  _todos = _todos.filter((todo) => (navId === 'all' ? true : navId === 'active' ? !todo.completed : todo.completed));
+  const _todos = todos.filter((todo) => (navId === 'all' ? true : navId === 'active' ? !todo.completed : todo.completed));
   _todos.forEach(({ id, content, completed }) => {
     html += `
     <li id="${id}" class="todo-item">
@@ -20,6 +23,8 @@ const render = () => {
     </li>`;
   });
 
+  $completedTodos.textContent = todos.filter((todo) => todo.completed).length;
+  $activeTodos.textContent = todos.filter((todo) => !todo.completed).length;
   $todos.innerHTML = html;
 };
 
@@ -73,6 +78,28 @@ const toggleTodo = (id) => {
     .catch((err) => console.log(err));
 };
 
+const toggleAll = (completed) => {
+  fetch('./todos', {
+    method: 'PATCH',
+    headers: { 'Content-type': 'application/json' },
+    body: JSON.stringify({ completed })
+  })
+    .then((res) => res.json())
+    .then((_todos) => todos = _todos)
+    .then(render)
+    .catch((err) => console.error(err));
+};
+
+const clearTodos = () => {
+  fetch('./completedTodos', {
+    method: 'DELETE'
+  })
+    .then((res) => res.json())
+    .then((_todos) => todos = _todos)
+    .then(render)
+    .catch((err) => console.error(err));
+};
+
 const changeNav = (li) => {
   [...$nav.children].forEach(($list) => {
     $list.classList.toggle('active', $list === li);
@@ -85,6 +112,7 @@ const changeNav = (li) => {
 // 이벤트
 window.onload = () => {
   getTodos();
+  console.log('fetch');
 };
 
 $inputTodo.onkeyup = ({ target, keyCode }) => {
@@ -99,6 +127,14 @@ $todos.onclick = ({ target }) => {
 
 $todos.onchange = ({ target }) => {
   toggleTodo(target.parentNode.id);
+};
+
+$completeAll.onchange = ({ target }) => {
+  toggleAll(target.checked);
+};
+
+$clearCompleted.onclick = () => {
+  clearTodos();
 };
 
 $nav.onclick = ({ target }) => {
