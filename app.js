@@ -49,7 +49,7 @@ app.delete('/completedTodos', (req, res) => {
   res.send(todos);
 });
 
-app.put('/todos', (req, res) => {
+app.patch('/todos', (req, res) => {
   const { completed } = req.body;
   todos = todos.map((todo) => ({ ...todo, completed }));
   res.send(todos);
