@@ -9,7 +9,7 @@ const $completeAll = document.querySelector('.complete-all');
 const $completedTodos = document.querySelector('.completed-todos');
 const $activeTodos = document.querySelector('.active-todos');
 
-// 렌더
+//TODO: 렌더링
 const render = () => {
   let html = '';
 
