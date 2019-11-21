@@ -62,7 +62,7 @@ const removeTodo = async (id) => {
     console.log(error);
   }
 };
-// test2
+// test3
 const toggleTodo = async (id) => {
   try {
     const completed = !todos.find((todo) => todo.id === +id).completed;
